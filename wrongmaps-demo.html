@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>WrongMaps — Useless GPS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { 
+      background: #f4f6f9; 
+      font-family: 'Segoe UI', Tahoma, sans-serif; 
+    }
+
+    .app-header { 
+      background: linear-gradient(135deg, #ff5f6d, #ffc371); 
+      color: white; 
+      padding: 15px; 
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 1.3em;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15); 
+    }
+
+    #map { 
+      height: calc(100vh - 360px); 
+      border-radius: 12px; 
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .info-panel { 
+      border-radius: 10px; 
+      padding: 12px 15px; 
+      margin-top: 10px; 
+      font-size: 14px; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .info-panel:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    #tripSummary { background: #ffffff; font-size: 1.15em; }
+    #trafficPanel { background: #fff3cd; }
+    #poiPanel { background: #e8f5e9; }
+    #navPanel { background: #e3f2fd; font-size: 1.05em; font-weight: bold; }
+    #weatherPanel { background: #d1c4e9; }
+    #achievementPanel { background: #f8bbd0; }
+
+    .btn-prank { 
+      background: linear-gradient(135deg, #ff5f6d, #ffc371); 
+      border: none; 
+      color: white; 
+      font-weight: bold; 
+      transition: opacity 0.2s ease;
+    }
+    .btn-prank:hover { 
+      opacity: 0.9; 
+    }
+
+    .progress { 
+      height: 15px; 
+      margin-top: 5px; 
+      border-radius: 10px;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="app-header">🚗 WrongMaps — Welcome, <span id="username">Guest</span></div>
+
+  <div class="container mt-3">
+    <div class="card shadow-sm p-3 border-0">
+      <div class="row g-2">
+        <div class="col-md-5">
+          <input id="start" class="form-control" placeholder="Start: Place or lat,lng">
+        </div>
+        <div class="col-md-5">
+          <input id="dest" class="form-control" placeholder="Destination: Place or lat,lng">
+        </div>
+        <div class="col-md-2">
+          <button id="routeBtn" class="btn btn-prank w-100">🎯 Prank Route</button>
+        </div>
+      </div>
+      <small class="text-muted mt-2 d-block">
+        ⚠ Simulation only — Do not use for real navigation.
+      </small>
+    </div>
+  </div>
+
+  <div class="container mt-3"><div id="map"></div></div>
+
+  <div class="container mt-3">
+    <div id="tripSummary" class="info-panel"><b>Trip Summary:</b> Waiting for route...</div>
+    <div class="progress"><div id="routeProgress" class="progress-bar bg-danger" style="width: 0%"></div></div>
+    <div id="trafficPanel" class="info-panel">🚧 Fake traffic info will appear here.</div>
+    <div id="poiPanel" class="info-panel">📍 Points of interest will appear here.</div>
+    <div id="navPanel" class="info-panel">🧭 Navigation will appear here.</div>
+    <div id="weatherPanel" class="info-panel">🌦 Weather info will appear here.</div>
+    <div id="achievementPanel" class="info-panel">🏅 Achievements will appear here.</div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    if (!localStorage.getItem('wrongmapsUser')) {
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById("username").innerText = localStorage.getItem('wrongmapsUser');
+    }
+
+    const map = L.map('map').setView([28.6139,77.2090], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    let polyLayers = [];
+
+    function parseLatLng(s) {
+      if (!s) return null;
+      const [lat, lng] = s.split(',').map(x => parseFloat(x.trim()));
+      return (isNaN(lat) || isNaN(lng)) ? null : [lat, lng];
+    }
+
+    async function geocodePlace(placeName) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(placeName)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.length === 0) throw new Error(`No results for "${placeName}"`);
+      return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
+
+    function getWrongDestination(originalDest) {
+      const offsetLat = (Math.random() - 0.5) * 2;
+      const offsetLng = (Math.random() - 0.5) * 2;
+      return [originalDest[0] + offsetLat, originalDest[1] + offsetLng];
+    }
+
+    function showFakeTraffic() {
+      const alerts = [
+        "🚧 Heavy snail traffic ahead.",
+        "🦆 Ducks crossing — expect 45 min delay.",
+        "🔥 Road on fire — scenic detour.",
+        "💃 Flash mob blocking main street.",
+        "🐘 Elephant parade in progress.",
+        "📸 Speed camera ahead — smile!"
+      ];
+      document.getElementById('trafficPanel').innerHTML = alerts[Math.floor(Math.random() * alerts.length)];
+    }
+
+    function showFakePOIs() {
+      const pois = [
+        "World's Largest Pothole",
+        "Statue of a Guy Eating Noodles",
+        "Haunted Restroom",
+        "Invisible Bridge",
+        "The Great Sandpit"
+      ];
+      let list = "";
+      for (let i = 0; i < 3; i++) { 
+        list += `• ${pois[Math.floor(Math.random() * pois.length)]}<br>`; 
+      }
+      document.getElementById('poiPanel').innerHTML = list;
+    }
+
+    function showFakeWeather() {
+      const weather = [
+        "☀ Sunny, 35°C",
+        "🌧 Heavy rain, 12°C",
+        "⛈ Thunderstorm, 20°C",
+        "❄ Snowstorm, -5°C",
+        "🌪 Tornado Watch"
+      ];
+      document.getElementById('weatherPanel').innerHTML = `<b>Weather at Destination:</b> ${weather[Math.floor(Math.random() * weather.length)]}`;
+    }
+
+    function showAchievements() {
+      const badges = [
+        "🏆 Master of Wrong Turns",
+        "🥇 Lost in Style",
+        "🚦 Red Light Runner (in dreams)",
+        "🗺 Route Rebel"
+      ];
+      document.getElementById('achievementPanel').innerHTML = `<b>Driver Achievements:</b><br>${badges[Math.floor(Math.random() * badges.length)]}`;
+    }
+
+    async function fetchRoutes(start, dest) {
+      const url = `https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${dest[1]},${dest[0]}?overview=full&geometries=geojson`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Routing service error");
+      return res.json();
+    }
+
+    function drawRoute(data) {
+      polyLayers.forEach(l => map.removeLayer(l));
+      polyLayers = [];
+      const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+      const poly = L.polyline(coords, { color: 'red', weight: 5, dashArray: '10, 10' }).addTo(map);
+      polyLayers.push(poly);
+      map.fitBounds(poly.getBounds());
+    }
+
+    function updateTripSummary(route, destName) {
+      const durationMins = Math.round(route.duration / 60);
+      const distanceKm = (route.distance / 1000).toFixed(1);
+      document.getElementById('tripSummary').innerHTML =
+        `<b>Trip Summary:</b> ${Math.floor(durationMins/60)} hr ${durationMins % 60} min (${distanceKm} km) — Heading to: ${destName}`;
+      fakeProgress();
+    }
+
+    function showFakeNavigation() {
+      const messages = [
+        "Turn left into a lake.",
+        "Continue straight for 1,342 km.",
+        "Stop for coffee at the next roundabout.",
+        "Turn right… eventually.",
+        "Make a U-turn and question your life choices.",
+        "Proceed until you see a cow, then turn left.",
+        "You have arrived… probably.",
+        "Drive through the shopping mall, it's faster."
+      ];
+      let steps = [];
+      for (let i = 0; i < 5; i++) { 
+        steps.push(messages[Math.floor(Math.random() * messages.length)]); 
+      }
+      document.getElementById('navPanel').innerHTML = steps.join("<br>");
+    }
+
+    function fakeProgress() {
+      let progress = 0;
+      const bar = document.getElementById('routeProgress');
+      const interval = setInterval(() => {
+        if (progress >= 100) { clearInterval(interval); }
+        progress += Math.floor(Math.random() * 5) + 1;
+        bar.style.width = Math.min(progress, 100) + "%";
+      }, 500);
+    }
+
+    document.getElementById('routeBtn').addEventListener('click', async () => {
+      try {
+        let startCoords = parseLatLng(start.value.trim()) || await geocodePlace(start.value.trim());
+        let destCoords = parseLatLng(dest.value.trim()) || await geocodePlace(dest.value.trim());
+        destCoords = getWrongDestination(destCoords);
+
+        const routeData = await fetchRoutes(startCoords, destCoords);
+        drawRoute(routeData);
+        updateTripSummary(routeData.routes[0], "Totally Wrong Place");
+        showFakeNavigation();
+        showFakeTraffic();
+        showFakePOIs();
+        showFakeWeather();
+        showAchievements();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  </script>
+</body>
+</html>
