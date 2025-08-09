@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>WrongMaps Leaderboard</title>
+<style>
+    body {
+        background: linear-gradient(135deg, #0f0f0f, #1e1e1e);
+        color: #ffffff;
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        text-align: center;
+        padding: 20px;
+        overflow-x: hidden;
+    }
+
+    h1 {
+        color: #ff9800;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px #ff9800, 0 0 20px #ff5722;
+        animation: glow 2s infinite alternate;
+    }
+
+    @keyframes glow {
+        from { text-shadow: 0 0 10px #ff9800; }
+        to { text-shadow: 0 0 20px #ff5722, 0 0 30px #ff9800; }
+    }
+
+    table {
+        width: 70%;
+        margin: auto;
+        border-collapse: collapse;
+        background: rgba(255, 152, 0, 0.05);
+        box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    th, td {
+        padding: 15px;
+        border: none;
+        font-size: 18px;
+    }
+
+    th {
+        background: #ff9800;
+        color: white;
+        font-size: 20px;
+    }
+
+    tr {
+        transition: transform 0.2s ease, background 0.3s ease;
+    }
+
+    tr:hover {
+        transform: scale(1.02) rotate(-1deg);
+        background: rgba(255, 152, 0, 0.2);
+    }
+
+    tr:nth-child(even) {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .medal {
+        font-size: 22px;
+    }
+
+    .gold { color: gold; }
+    .silver { color: silver; }
+    .bronze { color: #cd7f32; }
+
+    .badge {
+        display: inline-block;
+        background: #ff5722;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 14px;
+        margin-left: 8px;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    a {
+        color: #ff9800;
+        text-decoration: none;
+        font-size: 16px;
+        display: inline-block;
+        margin-top: 20px;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    /* Fade-in animation */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    tbody tr {
+        animation: fadeIn 0.6s ease forwards;
+    }
+</style>
+</head>
+<body>
+<h1>🏆 WrongMaps Prank Leaderboard</h1>
+<table>
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Username</th>
+            <th>Prank Routes</th>
+        </tr>
+    </thead>
+    <tbody id="leaderboard">
+    </tbody>
+</table>
+<br>
+<a href="wrongmaps-demo.html">⬅ Back to Map</a>
+
+<script>
+let players = JSON.parse(localStorage.getItem("wrongmapsPlayers")) || [];
+players.sort((a, b) => b.routes - a.routes);
+
+let table = document.getElementById("leaderboard");
+
+players.forEach((player, index) => {
+    let medal = "";
+    if (index === 0) medal = "<span class='medal gold'>🥇</span>";
+    else if (index === 1) medal = "<span class='medal silver'>🥈</span>";
+    else if (index === 2) medal = "<span class='medal bronze'>🥉</span>";
+
+    let badge = index === 0 ? "<span class='badge'>Prank Master</span>" : "";
+
+    let row = `<tr style="animation-delay:${index * 0.1}s">
+        <td>${index + 1} ${medal}</td>
+        <td>${player.name} ${badge}</td>
+        <td>${player.routes}</td>
+    </tr>`;
+    table.innerHTML += row;
+});
+</script>
+</body>
+</html>
