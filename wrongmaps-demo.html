@@ -81,11 +81,50 @@
       color: #555;
       margin-bottom: 8px;
     }
+    body.theme-dark {
+  background: #121212;
+  color: #ddd;
+}
+body.theme-dark header {
+  background-color: rgba(30, 30, 30, 0.95);
+  border-bottom: 4px dashed #ff66cc;
+  color: #eee;
+}
+body.theme-dark .badge {
+  background-color: rgba(50, 50, 50, 0.9);
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+  border-color: #ff66cc;
+  color: #eee;
+}
+body.theme-dark .unlock-btn {
+  background: #cc99ff;
+  color: #111;
+}
+body.theme-dark .unlock-btn:hover {
+  background: #b377ff;
+}
+body.theme-dark .self-destruct-btn {
+  background: #ff6666;
+  color: #111;
+}
+body.theme-dark .self-destruct-btn:hover {
+  background: #cc3333;
+}
+body.theme-dark #loadingBar {
+  background: #cc99ff;
+}
+
+  body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+  }
+
+
+
   </style>
 </head>
 <body>
   
-  <div class="app-header">🚗 WrongMaps — Welcome, <span id="username">Guest</span></div>
+  <div class="app-header">🚗 NotGoogleMaps — Welcome, <span id="username">Guest</span></div>
   <nav class="navbar navbar-light bg-light mb-3">
 
 </nav>
@@ -101,6 +140,7 @@
         </div>
         <div class="col-md-2">
           <button id="routeBtn" class="btn btn-prank w-100">🎯 Prank Route</button>
+          
         </div>
       </div>
       <small class="text-muted mt-2 d-block">
@@ -121,7 +161,12 @@
      
     <div class="container mt-2 text-end">
   <a href="history.html" class="btn btn-outline-secondary btn-sm">📜 Saved Routes</a>
+<a href="settings.html" class="btn btn-outline-secondary btn-sm">⚙️ Settings</a>
+<a href="achievements.html" class="btn btn-outline-secondary btn-sm">⚙️ Achievements</a>
+<a href="leaderboard.html" class="btn btn-outline-secondary btn-sm">⚙️ Leaderboard</a>
+
 </div>
+        
 
 
     <div id="multiModePanel" class="info-panel">
@@ -153,6 +198,69 @@
     let currentMode = 'driving';
     let waypoints = []; // {latlng, marker}
     let polyLayers = [];
+    // Flicker badge colors and shake wildly on hover
+document.querySelectorAll('.badge').forEach(badge => {
+  badge.addEventListener('mouseenter', () => {
+    const flicker = setInterval(() => {
+      badge.style.borderColor = `hsl(${Math.random()*360}, 100%, 50%)`;
+      badge.style.boxShadow = `0 0 20px 5px hsl(${Math.random()*360}, 100%, 70%)`;
+      badge.style.transform = `rotate(${(Math.random()-0.5)*30}deg) scale(${1 + Math.random()*0.3}) translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px)`;
+    }, 50);
+    badge.flickerInterval = flicker;
+  });
+  badge.addEventListener('mouseleave', () => {
+    clearInterval(badge.flickerInterval);
+    badge.style.borderColor = '';
+    badge.style.boxShadow = '';
+    badge.style.transform = '';
+  });
+});
+
+// Randomly swap badges positions every 10 seconds
+setInterval(() => {
+  const container = document.getElementById('badgeContainer');
+  const badges = [...container.children];
+  for(let i=0; i<badges.length; i++) {
+    const swapWith = Math.floor(Math.random()*badges.length);
+    container.insertBefore(badges[swapWith], badges[i]);
+  }
+}, 10000);
+
+// UFO abduction effect on random badge every 20 seconds
+function abductBadge() {
+  const badges = document.querySelectorAll('.badge:not(.locked)');
+  if (badges.length === 0) return;
+  const badge = badges[Math.floor(Math.random()*badges.length)];
+  const ufo = document.createElement('div');
+  ufo.textContent = '🛸';
+  ufo.style.position = 'fixed';
+  ufo.style.fontSize = '3rem';
+  ufo.style.top = '10%';
+  ufo.style.left = '-50px';
+  ufo.style.zIndex = 9999;
+  document.body.appendChild(ufo);
+
+  let left = -50;
+  const interval = setInterval(() => {
+    left += 20;
+    ufo.style.left = left + 'px';
+    if (left > window.innerWidth) {
+      clearInterval(interval);
+      document.body.removeChild(ufo);
+      // "Abduct" the badge (hide it for a moment)
+      badge.style.visibility = 'hidden';
+      setTimeout(() => badge.style.visibility = 'visible', 3000);
+      alert('🚨 Warning: Badge abducted by aliens! 👽');
+    }
+  }, 50);
+}
+setInterval(abductBadge, 20000);
+
+// Flash background colors randomly like a rave party
+setInterval(() => {
+  document.body.style.background = `linear-gradient(135deg, hsl(${Math.random()*360}, 100%, 50%), hsl(${Math.random()*360}, 100%, 50%), hsl(${Math.random()*360}, 100%, 50%), hsl(${Math.random()*360}, 100%, 50%))`;
+}, 2000);
+
     // On page load, check if a saved route was loaded from history page
 const savedRouteStr = sessionStorage.getItem('routeToLoad');
 if (savedRouteStr) {
@@ -281,17 +389,28 @@ if (savedRouteStr) {
 
     // Update trip summary panel
     function updateTripSummary(route, destName) {
-      const durationMins = Math.round(route.duration / 60);
-      const distanceKm = (route.distance / 1000).toFixed(1);
-      document.getElementById('tripSummary').innerHTML =
-        `<b>Trip Summary:</b> ${Math.floor(durationMins/60)} hr ${durationMins % 60} min (${distanceKm} km) — Heading to: ${destName}`;
-      fakeProgress();
-    }
+  // Duration in absurd units
+  const totalSeconds = route.duration; // in seconds
+  const absurdTimeMs = totalSeconds * 1000;
+  const fakeParsecs = (totalSeconds / 3600) * 0.000000001;
+
+  // Distance
+  const distanceKm = (route.distance / 1000).toFixed(1);
+
+  document.getElementById('tripSummary').innerHTML =
+    `<b>Trip Summary:</b> ${absurdTimeMs.toLocaleString()} milliseconds ` +
+    `(${fakeParsecs.toFixed(9)} parsecs) — Distance: ${distanceKm} km` +
+    `<br><b>Heading to:</b> ${destName}`;
+
+  fakeProgress();
+}
+
+
 
     // Show fake navigation steps
     function showFakeNavigation() {
       const messages = [
-        "Turn left into a lake.",
+        "In 40m, turn left into a lake.",
         "Continue straight for 1,342 km.",
         "Stop for coffee at the next roundabout.",
         "Turn right… eventually.",
@@ -422,27 +541,55 @@ if (savedRouteStr) {
 
     // Update the route based on current waypoints and mode
     async function updateRoute() {
-      if (waypoints.length < 2) {
-        document.getElementById('tripSummary').innerHTML = '<b>Trip Summary:</b> Add at least 2 waypoints.';
-        polyLayers.forEach(l => map.removeLayer(l));
-        polyLayers = [];
-        return;
-      }
-      const points = waypoints.map(wp => [wp.latlng.lat, wp.latlng.lng]);
-      try {
-        const routeData = await fetchRouteMultiMode(points, currentMode);
-        drawRoute(routeData);
-        updateTripSummary(routeData, "Your Custom Route");
-        showFakeNavigation();
-        showFakeTraffic();
-        showFakePOIs();
-        showFakeWeather();
-        showAchievements();
-        saveCurrentRoute();
-      } catch (err) {
-        alert(err.message);
-      }
+  if (waypoints.length < 2) {
+    document.getElementById('tripSummary').innerHTML = '<b>Trip Summary:</b> Add at least 2 waypoints.';
+    polyLayers.forEach(l => map.removeLayer(l));
+    polyLayers = [];
+    return;
+  }
+
+  const points = waypoints.map(wp => [wp.latlng.lat, wp.latlng.lng]);
+
+  try {
+    const routeData = await fetchRouteMultiMode(points, currentMode);
+
+    // Reverse geocode the final destination for name
+    const lastPoint = points[points.length - 1];
+    let destinationName = "Your Custom Route";
+
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lastPoint[0]}&lon=${lastPoint[1]}&format=json`);
+      const data = await res.json();
+      destinationName = data.display_name || destinationName;
+    } catch (geoErr) {
+      console.warn("Reverse geocode failed:", geoErr);
     }
+
+    drawRoute(routeData);
+    updateTripSummary(routeData, destinationName); // ✅ Use real place name
+    showFakeNavigation();
+    showFakeTraffic();
+    showFakePOIs();
+    showFakeWeather();
+    showAchievements();
+    saveCurrentRoute();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+    // Apply saved dark mode setting on page load
+(function() {
+  const darkModeSetting = localStorage.getItem('darkMode');
+  if (darkModeSetting === 'enabled') {
+    document.body.classList.add('theme-dark');
+  } else {
+    document.body.classList.remove('theme-dark');
+  }
+})();
+
+
   </script>
+  
 </body>
 </html>

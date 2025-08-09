@@ -121,6 +121,39 @@
         from { left: -100px; transform: rotate(0deg); }
         to { left: 110vw; transform: rotate(360deg); }
     }
+    body.theme-dark {
+  background: #121212;
+  color: #ddd;
+}
+body.theme-dark header {
+  background-color: rgba(30, 30, 30, 0.95);
+  border-bottom: 4px dashed #ff66cc;
+  color: #eee;
+}
+body.theme-dark .badge {
+  background-color: rgba(50, 50, 50, 0.9);
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+  border-color: #ff66cc;
+  color: #eee;
+}
+body.theme-dark .unlock-btn {
+  background: #cc99ff;
+  color: #111;
+}
+body.theme-dark .unlock-btn:hover {
+  background: #b377ff;
+}
+body.theme-dark .self-destruct-btn {
+  background: #ff6666;
+  color: #111;
+}
+body.theme-dark .self-destruct-btn:hover {
+  background: #cc3333;
+}
+body.theme-dark #loadingBar {
+  background: #cc99ff;
+}
+
 </style>
 </head>
 <body>
@@ -135,7 +168,10 @@
 
 <button class="unlock-btn" onclick="unlockRandomBadge()">🎯 Unlock Random Badge</button>
 <button class="self-destruct-btn" onclick="selfDestruct()">💥 Self Destruct Badges</button>
+<div class="container mt-2 text-centre">
+<a href="wrongmaps-demo.html" class="btn btn-outline-secondary btn-sm">Back to Maps</a>
 
+</div>
 <div id="jokePopup"></div>
 
 <script>
@@ -295,6 +331,16 @@
                            100% { transform: translate(1px, -1px) rotate(1deg); } }
     `;
     document.head.appendChild(style);
+    // Apply saved dark mode setting on page load
+(function() {
+  const darkModeSetting = localStorage.getItem('darkMode');
+  if (darkModeSetting === 'enabled') {
+    document.body.classList.add('theme-dark');
+  } else {
+    document.body.classList.remove('theme-dark');
+  }
+})();
+
 </script>
 
 </body>
