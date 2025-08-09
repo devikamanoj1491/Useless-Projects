@@ -53,6 +53,10 @@ Main page
 <img width="1898" height="864" alt="image" src="https://github.com/user-attachments/assets/d8e869ce-4d08-4803-a762-2f1932b3f160" />
 Saved routes
 
+Team Contributions
+Devika Manoj: Front end development
+Gopika T.P: Front end development
+
 ---
 Made with ❤️ at TinkerHub Useless Projects 
 
