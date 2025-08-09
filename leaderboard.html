@@ -1,149 +1,120 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-<title>WrongMaps Leaderboard</title>
-<style>
+  <meta charset="utf-8" />
+  <title>WrongMaps — Leaderboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
     body {
-        background: linear-gradient(135deg, #0f0f0f, #1e1e1e);
-        color: #ffffff;
-        font-family: 'Comic Sans MS', cursive, sans-serif;
-        text-align: center;
-        padding: 20px;
-        overflow-x: hidden;
+      background: linear-gradient(135deg, #ffcc70, #ff6f61);
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #330000;
     }
-
     h1 {
-        color: #ff9800;
-        margin-bottom: 20px;
-        text-shadow: 0 0 10px #ff9800, 0 0 20px #ff5722;
-        animation: glow 2s infinite alternate;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      color: #b33a3a;
     }
-
-    @keyframes glow {
-        from { text-shadow: 0 0 10px #ff9800; }
-        to { text-shadow: 0 0 20px #ff5722, 0 0 30px #ff9800; }
+    .leaderboard {
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+      padding: 1.5rem;
     }
-
-    table {
-        width: 70%;
-        margin: auto;
-        border-collapse: collapse;
-        background: rgba(255, 152, 0, 0.05);
-        box-shadow: 0 0 15px rgba(255, 152, 0, 0.4);
-        border-radius: 12px;
-        overflow: hidden;
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.7rem 0.5rem;
+      border-bottom: 1px solid #eee;
+      font-weight: 600;
+      font-size: 1.1rem;
     }
-
-    th, td {
-        padding: 15px;
-        border: none;
-        font-size: 18px;
+    .player-row.top3 {
+      background: #ffefcc;
+      font-weight: bold;
     }
-
-    th {
-        background: #ff9800;
-        color: white;
-        font-size: 20px;
-    }
-
-    tr {
-        transition: transform 0.2s ease, background 0.3s ease;
-    }
-
-    tr:hover {
-        transform: scale(1.02) rotate(-1deg);
-        background: rgba(255, 152, 0, 0.2);
-    }
-
-    tr:nth-child(even) {
-        background: rgba(255, 255, 255, 0.05);
-    }
-
     .medal {
-        font-size: 22px;
+      font-size: 1.3rem;
+      margin-right: 10px;
     }
-
-    .gold { color: gold; }
-    .silver { color: silver; }
-    .bronze { color: #cd7f32; }
-
-    .badge {
-        display: inline-block;
-        background: #ff5722;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 14px;
-        margin-left: 8px;
-        animation: pulse 1.5s infinite;
+    .btn-clear {
+      margin-top: 15px;
+      background: #b33a3a;
+      color: white;
+      border: none;
+      font-weight: bold;
     }
-
-    @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-        100% { transform: scale(1); }
+    .btn-clear:hover {
+      background: #8a2a2a;
     }
-
-    a {
-        color: #ff9800;
-        text-decoration: none;
-        font-size: 16px;
-        display: inline-block;
-        margin-top: 20px;
+    a.back-link {
+      margin-top: 20px;
+      color: #b33a3a;
+      font-weight: 600;
+      text-decoration: none;
     }
-
-    a:hover {
-        text-decoration: underline;
+    a.back-link:hover {
+      text-decoration: underline;
     }
-
-    /* Fade-in animation */
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    tbody tr {
-        animation: fadeIn 0.6s ease forwards;
-    }
-</style>
+  </style>
 </head>
 <body>
-<h1>🏆 WrongMaps Prank Leaderboard</h1>
-<table>
-    <thead>
-        <tr>
-            <th>Rank</th>
-            <th>Username</th>
-            <th>Prank Routes</th>
-        </tr>
-    </thead>
-    <tbody id="leaderboard">
-    </tbody>
-</table>
-<br>
-<a href="index.html">⬅ Back to Map</a>
 
-<script>
-let players = JSON.parse(localStorage.getItem("wrongmapsPlayers")) || [];
-players.sort((a, b) => b.routes - a.routes);
+  <h1>WrongMaps Leaderboard</h1>
 
-let table = document.getElementById("leaderboard");
+  <div class="leaderboard" id="leaderboard">
+    <!-- Player rows inserted here -->
+  </div>
 
-players.forEach((player, index) => {
-    let medal = "";
-    if (index === 0) medal = "<span class='medal gold'>🥇</span>";
-    else if (index === 1) medal = "<span class='medal silver'>🥈</span>";
-    else if (index === 2) medal = "<span class='medal bronze'>🥉</span>";
+  <button class="btn btn-clear" onclick="clearLeaderboard()">Clear Leaderboard</button>
 
-    let badge = index === 0 ? "<span class='badge'>Prank Master</span>" : "";
+  <a href="index.html" class="back-link">← Back to Map</a>
 
-    let row = `<tr style="animation-delay:${index * 0.1}s">
-        <td>${index + 1} ${medal}</td>
-        <td>${player.name} ${badge}</td>
-        <td>${player.routes}</td>
-    </tr>`;
-    table.innerHTML += row;
-});
-</script>
+  <script>
+    const medals = ['🥇', '🥈', '🥉'];
+
+    function loadLeaderboard() {
+      const lb = document.getElementById('leaderboard');
+      lb.innerHTML = '';
+
+      let players = JSON.parse(localStorage.getItem('wrongmapsPlayers')) || [];
+
+      // Sort descending by routes
+      players.sort((a, b) => b.routes - a.routes);
+
+      if (players.length === 0) {
+        lb.innerHTML = '<p style="text-align:center; padding:1rem; font-style: italic;">No players yet. Play to get on the board!</p>';
+        return;
+      }
+
+      // Show top 10 players
+      players.slice(0,10).forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'player-row' + (i < 3 ? ' top3' : '');
+        div.innerHTML = `
+          <span>${medals[i] || ''} ${p.name}</span>
+          <span>Routes: ${p.routes}</span>
+        `;
+        lb.appendChild(div);
+      });
+    }
+
+    function clearLeaderboard() {
+      if(confirm('Are you sure you want to clear the leaderboard?')) {
+        localStorage.removeItem('wrongmapsPlayers');
+        loadLeaderboard();
+      }
+    }
+
+    loadLeaderboard();
+  </script>
 </body>
 </html>
