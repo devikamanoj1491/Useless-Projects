@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>WrongMaps — Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      background: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      padding: 20px;
+    }
+    .app-header {
+      background: linear-gradient(135deg, #ff5f6d, #ffc371);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.3em;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      margin-bottom: 30px;
+    }
+    .form-switch {
+      padding-left: 2.5rem;
+    }
+    label {
+      user-select: none;
+    }
+    .btn-back {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-header">⚙️ WrongMaps — Settings</div>
+
+  <div class="container">
+    <form id="settingsForm">
+
+      <!-- Sound/Music toggle -->
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="soundToggle" />
+        <label class="form-check-label" for="soundToggle">Enable Sound / Music</label>
+      </div>
+
+      <!-- Prank intensity slider -->
+      <label for="prankIntensity" class="form-label">Prank Intensity (How wrong the destination can be)</label>
+      <input type="range" class="form-range mb-4" min="0" max="5" step="0.1" id="prankIntensity" />
+
+      <!-- Map theme selector -->
+      <label for="mapTheme" class="form-label">Map Theme</label>
+      <select class="form-select mb-4" id="mapTheme">
+        <option value="light">Light (Default)</option>
+        <option value="dark">Dark</option>
+        <option value="satellite">Satellite</option>
+      </select>
+
+      <!-- Language selector -->
+      <label for="languageSelect" class="form-label">Language</label>
+      <select class="form-select mb-4" id="languageSelect">
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="hi">Hindi</option>
+        <!-- Add more languages as needed -->
+      </select>
+
+      <button type="submit" class="btn btn-primary">Save Settings</button>
+    </form>
+
+    <a href="wrongmaps-demo.html" class="btn btn-outline-secondary btn-back">← Back to Map</a>
+  </div>
+
+  <script>
+    // Load saved settings or defaults
+    const soundToggle = document.getElementById('soundToggle');
+    const prankIntensity = document.getElementById('prankIntensity');
+    const mapTheme = document.getElementById('mapTheme');
+    const languageSelect = document.getElementById('languageSelect');
+
+    const settingsKey = 'wrongmapsSettings';
+
+    function loadSettings() {
+      const saved = localStorage.getItem(settingsKey);
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          soundToggle.checked = settings.soundEnabled ?? true;
+          prankIntensity.value = settings.prankIntensity ?? 1;
+          mapTheme.value = settings.mapTheme ?? 'light';
+          languageSelect.value = settings.language ?? 'en';
+
+          applyMapTheme(settings.mapTheme ?? 'light');
+          // Also sync darkMode key for easier global checking
+          if ((settings.mapTheme ?? 'light') === 'dark') {
+            localStorage.setItem('darkMode', 'enabled');
+          } else {
+            localStorage.setItem('darkMode', 'disabled');
+          }
+        } catch {
+          // corrupted data - ignore
+        }
+      } else {
+        // Defaults
+        soundToggle.checked = true;
+        prankIntensity.value = 1;
+        mapTheme.value = 'light';
+        languageSelect.value = 'en';
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    }
+
+    function saveSettings() {
+      const settings = {
+        soundEnabled: soundToggle.checked,
+        prankIntensity: parseFloat(prankIntensity.value),
+        mapTheme: mapTheme.value,
+        language: languageSelect.value
+      };
+      localStorage.setItem(settingsKey, JSON.stringify(settings));
+
+      // Sync darkMode separately
+      if (mapTheme.value === 'dark') {
+        localStorage.setItem('darkMode', 'enabled');
+      } else {
+        localStorage.setItem('darkMode', 'disabled');
+      }
+    }
+
+    // Apply map theme immediately (for example, toggling a CSS class on body)
+    function applyMapTheme(theme) {
+      document.body.classList.remove('theme-light', 'theme-dark', 'theme-satellite');
+      document.body.classList.add('theme-' + theme);
+    }
+
+    // Listen for changes to apply immediately
+    soundToggle.addEventListener('change', () => {
+      // Here you could mute/unmute music in the main app if integrated
+      saveSettings();
+    });
+
+    prankIntensity.addEventListener('input', () => {
+      // No immediate visual change here, just save value
+      saveSettings();
+    });
+
+    mapTheme.addEventListener('change', (e) => {
+      applyMapTheme(e.target.value);
+      saveSettings();
+    });
+
+    languageSelect.addEventListener('change', () => {
+      // You might want to reload text or switch language here
+      saveSettings();
+    });
+
+    // Save on form submit (in case user presses save button)
+    document.getElementById('settingsForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveSettings();
+      alert('Settings saved!');
+    });
+
+    loadSettings();
+  </script>
+
+  <style>
+    /* Example dark and satellite themes for demonstration */
+    body.theme-dark {
+      background: #121212;
+      color: #ddd;
+    }
+    body.theme-dark .app-header {
+      background: linear-gradient(135deg, #333, #666);
+      color: #eee;
+    }
+    body.theme-satellite {
+      background: url('https://maps.wikimedia.org/img/sky_2048.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: #222;
+    }
+    body.theme-satellite .app-header {
+      background: rgba(255, 255, 255, 0.8);
+      color: #222;
+      box-shadow: none;
+    }
+  </style>
+
+</body>
+</html>
