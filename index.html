@@ -8,9 +8,28 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
   <style>
-    body { 
-      background: #f4f6f9; 
-      font-family: 'Segoe UI', Tahoma, sans-serif; 
+    body {
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+
+      /* Animated rainbow background */
+      background: linear-gradient(270deg, 
+        red, orange, yellow, green, blue, indigo, violet, red);
+      background-size: 1400% 1400%;
+      animation: rainbowBackground 20s ease infinite;
+      color: #222; /* text color for contrast */
+      transition: color 0.3s ease;
+    }
+
+    @keyframes rainbowBackground {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     .app-header { 
@@ -37,13 +56,15 @@
       font-size: 14px; 
       box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: white; /* to keep info panels readable */
+      color: #222;
     }
     .info-panel:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
 
-    #tripSummary { background: #ffffff; font-size: 1.15em; }
+    #tripSummary { font-size: 1.15em; }
     #trafficPanel { background: #fff3cd; }
     #poiPanel { background: #e8f5e9; }
     #navPanel { background: #e3f2fd; font-size: 1.05em; font-weight: bold; }
@@ -74,6 +95,7 @@
       border-radius: 10px;
       margin-bottom: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      color: #222;
     }
 
     #instructions {
@@ -81,53 +103,45 @@
       color: #555;
       margin-bottom: 8px;
     }
+
     body.theme-dark {
-  background: #121212;
-  color: #ddd;
-}
-body.theme-dark header {
-  background-color: rgba(30, 30, 30, 0.95);
-  border-bottom: 4px dashed #ff66cc;
-  color: #eee;
-}
-body.theme-dark .badge {
-  background-color: rgba(50, 50, 50, 0.9);
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
-  border-color: #ff66cc;
-  color: #eee;
-}
-body.theme-dark .unlock-btn {
-  background: #cc99ff;
-  color: #111;
-}
-body.theme-dark .unlock-btn:hover {
-  background: #b377ff;
-}
-body.theme-dark .self-destruct-btn {
-  background: #ff6666;
-  color: #111;
-}
-body.theme-dark .self-destruct-btn:hover {
-  background: #cc3333;
-}
-body.theme-dark #loadingBar {
-  background: #cc99ff;
-}
-
-  body {
-    font-family: 'Comic Sans MS', cursive, sans-serif;
-  }
-
-
-
+      background: #121212;
+      color: #ddd;
+    }
+    body.theme-dark header {
+      background-color: rgba(30, 30, 30, 0.95);
+      border-bottom: 4px dashed #ff66cc;
+      color: #eee;
+    }
+    body.theme-dark .badge {
+      background-color: rgba(50, 50, 50, 0.9);
+      box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+      border-color: #ff66cc;
+      color: #eee;
+    }
+    body.theme-dark .unlock-btn {
+      background: #cc99ff;
+      color: #111;
+    }
+    body.theme-dark .unlock-btn:hover {
+      background: #b377ff;
+    }
+    body.theme-dark .self-destruct-btn {
+      background: #ff6666;
+      color: #111;
+    }
+    body.theme-dark .self-destruct-btn:hover {
+      background: #cc3333;
+    }
+    body.theme-dark #loadingBar {
+      background: #cc99ff;
+    }
   </style>
 </head>
 <body>
   
   <div class="app-header">🚗 NotGoogleMaps — Welcome, <span id="username">Guest</span></div>
-  <nav class="navbar navbar-light bg-light mb-3">
-
-</nav>
+  <nav class="navbar navbar-light bg-light mb-3"></nav>
 
   <div class="container mt-3">
     <div class="card shadow-sm p-3 border-0">
@@ -140,7 +154,6 @@ body.theme-dark #loadingBar {
         </div>
         <div class="col-md-2">
           <button id="routeBtn" class="btn btn-prank w-100">🎯 Prank Route</button>
-          
         </div>
       </div>
       <small class="text-muted mt-2 d-block">
@@ -160,15 +173,12 @@ body.theme-dark #loadingBar {
     </div>
      
     <div class="container mt-2 text-end">
-  <a href="history.html" class="btn btn-outline-secondary btn-sm">📜 Saved Routes</a>
-<a href="settings.html" class="btn btn-outline-secondary btn-sm">⚙️ Settings</a>
-<a href="achievements.html" class="btn btn-outline-secondary btn-sm">⚙️ Achievements</a>
-<a href="leaderboard.html" class="btn btn-outline-secondary btn-sm">⚙️ Leaderboard</a>
-
-</div>
+      <a href="history.html" class="btn btn-outline-secondary btn-sm">📜 Saved Routes</a>
+      <a href="settings.html" class="btn btn-outline-secondary btn-sm">⚙️ Settings</a>
+      <a href="achievements.html" class="btn btn-outline-secondary btn-sm">🏅 Achievements</a>
+      <a href="leaderboard.html" class="btn btn-outline-secondary btn-sm">📊 Leaderboard</a>
+    </div>
         
-
-
     <div id="multiModePanel" class="info-panel">
       <b>All Mode Summary:</b> Click a travel mode to view estimates.
     </div>
@@ -198,97 +208,9 @@ body.theme-dark #loadingBar {
     let currentMode = 'driving';
     let waypoints = []; // {latlng, marker}
     let polyLayers = [];
-    // Flicker badge colors and shake wildly on hover
-document.querySelectorAll('.badge').forEach(badge => {
-  badge.addEventListener('mouseenter', () => {
-    const flicker = setInterval(() => {
-      badge.style.borderColor = `hsl(${Math.random()*360}, 100%, 50%)`;
-      badge.style.boxShadow = `0 0 20px 5px hsl(${Math.random()*360}, 100%, 70%)`;
-      badge.style.transform = `rotate(${(Math.random()-0.5)*30}deg) scale(${1 + Math.random()*0.3}) translate(${(Math.random()-0.5)*10}px, ${(Math.random()-0.5)*10}px)`;
-    }, 50);
-    badge.flickerInterval = flicker;
-  });
-  badge.addEventListener('mouseleave', () => {
-    clearInterval(badge.flickerInterval);
-    badge.style.borderColor = '';
-    badge.style.boxShadow = '';
-    badge.style.transform = '';
-  });
-});
-
-// Randomly swap badges positions every 10 seconds
-setInterval(() => {
-  const container = document.getElementById('badgeContainer');
-  const badges = [...container.children];
-  for(let i=0; i<badges.length; i++) {
-    const swapWith = Math.floor(Math.random()*badges.length);
-    container.insertBefore(badges[swapWith], badges[i]);
-  }
-}, 10000);
-
-// UFO abduction effect on random badge every 20 seconds
-function abductBadge() {
-  const badges = document.querySelectorAll('.badge:not(.locked)');
-  if (badges.length === 0) return;
-  const badge = badges[Math.floor(Math.random()*badges.length)];
-  const ufo = document.createElement('div');
-  ufo.textContent = '🛸';
-  ufo.style.position = 'fixed';
-  ufo.style.fontSize = '3rem';
-  ufo.style.top = '10%';
-  ufo.style.left = '-50px';
-  ufo.style.zIndex = 9999;
-  document.body.appendChild(ufo);
-
-  let left = -50;
-  const interval = setInterval(() => {
-    left += 20;
-    ufo.style.left = left + 'px';
-    if (left > window.innerWidth) {
-      clearInterval(interval);
-      document.body.removeChild(ufo);
-      // "Abduct" the badge (hide it for a moment)
-      badge.style.visibility = 'hidden';
-      setTimeout(() => badge.style.visibility = 'visible', 3000);
-      alert('🚨 Warning: Badge abducted by aliens! 👽');
-    }
-  }, 50);
-}
-setInterval(abductBadge, 20000);
-
-// Flash background colors randomly like a rave party
-setInterval(() => {
-  document.body.style.background = `linear-gradient(135deg, hsl(${Math.random()*360}, 100%, 50%), hsl(${Math.random()*360}, 100%, 50%), hsl(${Math.random()*360}, 100%, 50%), hsl(${Math.random()*360}, 100%, 50%))`;
-}, 2000);
-
-    // On page load, check if a saved route was loaded from history page
-const savedRouteStr = sessionStorage.getItem('routeToLoad');
-if (savedRouteStr) {
-  const savedRoute = JSON.parse(savedRouteStr);
-  sessionStorage.removeItem('routeToLoad');
-
-  // Clear current waypoints
-  waypoints.forEach(wp => map.removeLayer(wp.marker));
-  waypoints = [];
-
-  // Add start and destination waypoints from saved route
-  addWaypoint(L.latLng(savedRoute.start[0], savedRoute.start[1]));
-  addWaypoint(L.latLng(savedRoute.destination[0], savedRoute.destination[1]));
-
-  // Set current travel mode
-  currentMode = savedRoute.mode;
-  document.getElementById('multiModePanel').innerHTML = `<b>${currentMode.toUpperCase()} mode selected.</b> Click "🎯 Prank Route" or add waypoints on the map to see the results.`;
-
-  updateRoute();
-}
-
-    function setMode(mode) {
-      currentMode = mode;
-      document.getElementById('multiModePanel').innerHTML = `<b>${mode.toUpperCase()} mode selected.</b> Click "🎯 Prank Route" or add waypoints on the map to see the results.`;
-    }
 
     if (!localStorage.getItem('wrongmapsUser')) {
-      window.location.href = 'login.html';
+      window.location.href = 'loginpage.html';
     } else {
       document.getElementById("username").innerText = localStorage.getItem('wrongmapsUser');
     }
@@ -309,6 +231,14 @@ if (savedRouteStr) {
       const data = await res.json();
       if (data.length === 0) throw new Error(`No results for "${placeName}"`);
       return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+    }
+
+    async function reverseGeocode(lat, lng) {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Reverse geocoding failed");
+      const data = await res.json();
+      return data.display_name || `${lat.toFixed(3)}, ${lng.toFixed(3)}`;
     }
 
     // Add waypoint with draggable marker
@@ -389,23 +319,18 @@ if (savedRouteStr) {
 
     // Update trip summary panel
     function updateTripSummary(route, destName) {
-  // Duration in absurd units
-  const totalSeconds = route.duration; // in seconds
-  const absurdTimeMs = totalSeconds * 1000;
-  const fakeParsecs = (totalSeconds / 3600) * 0.000000001;
+      const totalSeconds = route.duration; // in seconds
+      const absurdTimeMs = totalSeconds * 1000;
+      const fakeParsecs = (totalSeconds / 3600) * 0.000000001;
+      const distanceKm = (route.distance / 1000).toFixed(1);
 
-  // Distance
-  const distanceKm = (route.distance / 1000).toFixed(1);
+      document.getElementById('tripSummary').innerHTML =
+        `<b>Trip Summary:</b> ${absurdTimeMs.toLocaleString()} milliseconds ` +
+        `(${fakeParsecs.toFixed(9)} parsecs) — Distance: ${distanceKm} km` +
+        `<br><b>Heading to:</b> ${destName}`;
 
-  document.getElementById('tripSummary').innerHTML =
-    `<b>Trip Summary:</b> ${absurdTimeMs.toLocaleString()} milliseconds ` +
-    `(${fakeParsecs.toFixed(9)} parsecs) — Distance: ${distanceKm} km` +
-    `<br><b>Heading to:</b> ${destName}`;
-
-  fakeProgress();
-}
-
-
+      fakeProgress();
+    }
 
     // Show fake navigation steps
     function showFakeNavigation() {
@@ -425,18 +350,18 @@ if (savedRouteStr) {
       }
       document.getElementById('navPanel').innerHTML = steps.join("<br>");
     }
+
     function saveCurrentRoute() {
-  if (waypoints.length < 2) return;
-  const start = [waypoints[0].latlng.lat, waypoints[0].latlng.lng];
-  const destination = [waypoints[waypoints.length - 1].latlng.lat, waypoints[waypoints.length - 1].latlng.lng];
-  const timestamp = Date.now();
+      if (waypoints.length < 2) return;
+      const start = [waypoints[0].latlng.lat, waypoints[0].latlng.lng];
+      const destination = [waypoints[waypoints.length - 1].latlng.lat, waypoints[waypoints.length - 1].latlng.lng];
+      const timestamp = Date.now();
 
-  const routes = JSON.parse(localStorage.getItem('wrongmapsSavedRoutes')) || [];
-  routes.push({ start, destination, mode: currentMode, timestamp });
-  localStorage.setItem('wrongmapsSavedRoutes', JSON.stringify(routes));
-}
+      const routes = JSON.parse(localStorage.getItem('wrongmapsSavedRoutes')) || [];
+      routes.push({ start, destination, mode: currentMode, timestamp });
+      localStorage.setItem('wrongmapsSavedRoutes', JSON.stringify(routes));
+    }
 
-   
     // Fake progress bar animation
     function fakeProgress() {
       let progress = 0;
@@ -497,99 +422,88 @@ if (savedRouteStr) {
       document.getElementById('achievementPanel').innerHTML = `<b>Driver Achievements:</b><br>${badges[Math.floor(Math.random() * badges.length)]}`;
     }
 
-    // Map click to add waypoint
+    // Mode setter with button highlight
+    function setMode(mode) {
+      currentMode = mode;
+      updateRoute();
+    }
+
+    // Core update route function, with reverse geocode for prank destination
+    async function updateRoute() {
+      if (waypoints.length < 2) {
+        document.getElementById('tripSummary').innerHTML = "<b>Trip Summary:</b> Add at least two points.";
+        polyLayers.forEach(l => map.removeLayer(l));
+        polyLayers = [];
+        return;
+      }
+
+      const coords = waypoints.map(wp => [wp.latlng.lat, wp.latlng.lng]);
+      const start = coords[0];
+      const originalDest = coords[coords.length - 1];
+      const prankDest = getWrongDestination(originalDest);
+
+      try {
+        // Get place name for prank destination
+        const prankDestName = await reverseGeocode(prankDest[0], prankDest[1]);
+
+        // Calculate prank route (except train is fake)
+        const prankRoute = await fetchRouteMultiMode(
+          [start, prankDest],
+          currentMode === 'train' ? 'driving' : currentMode
+        );
+
+        // Calculate real route
+        const realRoute = await fetchRouteMultiMode(coords, currentMode);
+
+        drawRoute(prankRoute);
+
+        updateTripSummary(prankRoute, prankDestName);
+
+        showFakeNavigation();
+        showFakeTraffic();
+        showFakePOIs();
+        showFakeWeather();
+        showAchievements();
+
+        saveCurrentRoute();
+
+      } catch (e) {
+        document.getElementById('tripSummary').innerHTML = "<b>Trip Summary:</b> " + e.message;
+      }
+    }
+
+    // When user clicks map, add waypoint
     map.on('click', (e) => {
       addWaypoint(e.latlng);
     });
 
-    const prankAudio = document.getElementById('prankAudio');
+    document.getElementById('routeBtn').addEventListener('click', () => {
+      // Clear existing waypoints
+      waypoints.forEach(wp => map.removeLayer(wp.marker));
+      waypoints = [];
 
-    // Main route button click — parses inputs and sets waypoints start+dest + plays prank music
-    document.getElementById('routeBtn').addEventListener('click', async () => {
-      try {
-        // Stop music and reset progress if already playing, then start new route and music
-        prankAudio.pause();
-        prankAudio.currentTime = 0;
-
-        // Clear existing waypoints first
-        waypoints.forEach(wp => map.removeLayer(wp.marker));
-        waypoints = [];
-
-        let startCoords = parseLatLng(document.getElementById('start').value.trim());
-        if (!startCoords) startCoords = await geocodePlace(document.getElementById('start').value.trim());
-
-        let destCoords = parseLatLng(document.getElementById('dest').value.trim());
-        if (!destCoords) destCoords = await geocodePlace(document.getElementById('dest').value.trim());
-
-        // Apply prank offset on destination
-        destCoords = getWrongDestination(destCoords);
-
-        // Add start and prank destination waypoints
+      // Read inputs, parse them to coordinates or geocode
+      Promise.all([
+        parseInputToLatLng(document.getElementById('start').value),
+        parseInputToLatLng(document.getElementById('dest').value)
+      ]).then(([startCoords, destCoords]) => {
+        if (!startCoords || !destCoords) {
+          alert("Please enter valid start and destination.");
+          return;
+        }
         addWaypoint(L.latLng(startCoords[0], startCoords[1]));
         addWaypoint(L.latLng(destCoords[0], destCoords[1]));
-
-        // Route will auto-update because addWaypoint calls updateRoute()
-
-        // Play prank music
-        prankAudio.play().catch(() => {
-          console.log("Autoplay prevented; user interaction required to play sound.");
-        });
-      } catch (err) {
-        alert(err.message);
-      }
+      }).catch(err => alert("Error parsing locations: " + err.message));
     });
 
-    // Update the route based on current waypoints and mode
-    async function updateRoute() {
-  if (waypoints.length < 2) {
-    document.getElementById('tripSummary').innerHTML = '<b>Trip Summary:</b> Add at least 2 waypoints.';
-    polyLayers.forEach(l => map.removeLayer(l));
-    polyLayers = [];
-    return;
-  }
-
-  const points = waypoints.map(wp => [wp.latlng.lat, wp.latlng.lng]);
-
-  try {
-    const routeData = await fetchRouteMultiMode(points, currentMode);
-
-    // Reverse geocode the final destination for name
-    const lastPoint = points[points.length - 1];
-    let destinationName = "Your Custom Route";
-
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lastPoint[0]}&lon=${lastPoint[1]}&format=json`);
-      const data = await res.json();
-      destinationName = data.display_name || destinationName;
-    } catch (geoErr) {
-      console.warn("Reverse geocode failed:", geoErr);
+    // Helper: parse input (lat,lng) or geocode place
+    async function parseInputToLatLng(input) {
+      if (!input.trim()) return null;
+      const latlng = parseLatLng(input);
+      if (latlng) return latlng;
+      return await geocodePlace(input);
     }
 
-    drawRoute(routeData);
-    updateTripSummary(routeData, destinationName); // ✅ Use real place name
-    showFakeNavigation();
-    showFakeTraffic();
-    showFakePOIs();
-    showFakeWeather();
-    showAchievements();
-    saveCurrentRoute();
-  } catch (err) {
-    alert(err.message);
-  }
-}
-
-    // Apply saved dark mode setting on page load
-(function() {
-  const darkModeSetting = localStorage.getItem('darkMode');
-  if (darkModeSetting === 'enabled') {
-    document.body.classList.add('theme-dark');
-  } else {
-    document.body.classList.remove('theme-dark');
-  }
-})();
-
-
   </script>
-  
 </body>
 </html>
