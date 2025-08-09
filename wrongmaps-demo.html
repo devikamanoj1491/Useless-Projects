@@ -86,6 +86,9 @@
 <body>
   
   <div class="app-header">🚗 WrongMaps — Welcome, <span id="username">Guest</span></div>
+  <nav class="navbar navbar-light bg-light mb-3">
+
+</nav>
 
   <div class="container mt-3">
     <div class="card shadow-sm p-3 border-0">
@@ -115,6 +118,11 @@
       <button class="btn btn-sm btn-outline-warning m-1" onclick="setMode('cycling')">🚴 Cycling</button>
       <button class="btn btn-sm btn-outline-secondary m-1" onclick="setMode('train')">🚆 Train</button>
     </div>
+     
+    <div class="container mt-2 text-end">
+  <a href="history.html" class="btn btn-outline-secondary btn-sm">📜 Saved Routes</a>
+</div>
+
 
     <div id="multiModePanel" class="info-panel">
       <b>All Mode Summary:</b> Click a travel mode to view estimates.
@@ -134,11 +142,37 @@
     <div id="achievementPanel" class="info-panel">🏅 Achievements will appear here.</div>
   </div>
 
+  <!-- Prank music audio element -->
+  <audio id="prankAudio" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/23/audio_3f6e7b49e0.mp3?filename=fun-funky-ambient-116963.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     let currentMode = 'driving';
     let waypoints = []; // {latlng, marker}
     let polyLayers = [];
+    // On page load, check if a saved route was loaded from history page
+const savedRouteStr = sessionStorage.getItem('routeToLoad');
+if (savedRouteStr) {
+  const savedRoute = JSON.parse(savedRouteStr);
+  sessionStorage.removeItem('routeToLoad');
+
+  // Clear current waypoints
+  waypoints.forEach(wp => map.removeLayer(wp.marker));
+  waypoints = [];
+
+  // Add start and destination waypoints from saved route
+  addWaypoint(L.latLng(savedRoute.start[0], savedRoute.start[1]));
+  addWaypoint(L.latLng(savedRoute.destination[0], savedRoute.destination[1]));
+
+  // Set current travel mode
+  currentMode = savedRoute.mode;
+  document.getElementById('multiModePanel').innerHTML = `<b>${currentMode.toUpperCase()} mode selected.</b> Click "🎯 Prank Route" or add waypoints on the map to see the results.`;
+
+  updateRoute();
+}
 
     function setMode(mode) {
       currentMode = mode;
@@ -272,7 +306,18 @@
       }
       document.getElementById('navPanel').innerHTML = steps.join("<br>");
     }
+    function saveCurrentRoute() {
+  if (waypoints.length < 2) return;
+  const start = [waypoints[0].latlng.lat, waypoints[0].latlng.lng];
+  const destination = [waypoints[waypoints.length - 1].latlng.lat, waypoints[waypoints.length - 1].latlng.lng];
+  const timestamp = Date.now();
 
+  const routes = JSON.parse(localStorage.getItem('wrongmapsSavedRoutes')) || [];
+  routes.push({ start, destination, mode: currentMode, timestamp });
+  localStorage.setItem('wrongmapsSavedRoutes', JSON.stringify(routes));
+}
+
+   
     // Fake progress bar animation
     function fakeProgress() {
       let progress = 0;
@@ -338,9 +383,15 @@
       addWaypoint(e.latlng);
     });
 
-    // Main route button click — parses inputs and sets waypoints start+dest
+    const prankAudio = document.getElementById('prankAudio');
+
+    // Main route button click — parses inputs and sets waypoints start+dest + plays prank music
     document.getElementById('routeBtn').addEventListener('click', async () => {
       try {
+        // Stop music and reset progress if already playing, then start new route and music
+        prankAudio.pause();
+        prankAudio.currentTime = 0;
+
         // Clear existing waypoints first
         waypoints.forEach(wp => map.removeLayer(wp.marker));
         waypoints = [];
@@ -359,6 +410,11 @@
         addWaypoint(L.latLng(destCoords[0], destCoords[1]));
 
         // Route will auto-update because addWaypoint calls updateRoute()
+
+        // Play prank music
+        prankAudio.play().catch(() => {
+          console.log("Autoplay prevented; user interaction required to play sound.");
+        });
       } catch (err) {
         alert(err.message);
       }
@@ -382,6 +438,7 @@
         showFakePOIs();
         showFakeWeather();
         showAchievements();
+        saveCurrentRoute();
       } catch (err) {
         alert(err.message);
       }
